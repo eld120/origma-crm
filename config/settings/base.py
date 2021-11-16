@@ -77,6 +77,8 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "origmacrm.users.apps.UsersConfig",
     # Your stuff: custom apps go here
+    "origmacrm.customer",
+    "origmacrm.interaction",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -309,5 +311,7 @@ REST_FRAMEWORK = {
 
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
 CORS_URLS_REGEX = r"^/api/.*$"
+
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 # Your stuff...
 # ------------------------------------------------------------------------------
