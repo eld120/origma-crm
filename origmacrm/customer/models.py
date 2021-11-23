@@ -1,10 +1,11 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from .validators import phone_validator
 
-class CustRole(models.Model):
-    class Meta:
-        abstract = True
+
+class Customer(models.Model):
+    """A model that describes a User/business, vendors, or customers"""
 
     CUSTOMER_ROLES = (
         ("customer", "Customer"),
@@ -12,13 +13,26 @@ class CustRole(models.Model):
         ("vendor", "Vendor"),
         ("employee", "Employee"),
     )
-
-
-# Create your models here.
-class Customer(CustRole):
-    """A model that describes a User/business, vendors, or customers"""
-
-    role = models.CharField(_("Role"), max_length=50)
+    INDUSTRY_OPTIONS = (
+        ("agriculture", "Agriculture"),
+        ("arts entertainment", "Arts & Entertainment"),
+        ("construction", "Construction"),
+        ("education", "Education"),
+        ("energy", "Energy"),
+        ("food", "Food & Hospitality"),
+        ("finance", "Finance and Insurance"),
+        ("healthcare", "Healthcare"),
+        ("manufacturing", "Manufacturing"),
+        ("mining", "Mining"),
+        ("other", "Other Services"),
+        ("services", "Professional, Scientific, and Tech Services"),
+        ("real estate", "Real Estate"),
+        ("retail", "Retail"),
+        ("transportation", "Transportation & Logistics"),
+        ("utilities", "Utilities"),
+        ("wholesale", "Wholesale"),
+    )
+    role = models.CharField(_("Role"), choices=CUSTOMER_ROLES, max_length=50)
     dba = models.CharField(_("dba"), max_length=50)
     name = models.CharField(_("Legal Business Entity"), max_length=50)
     billing_address = models.ForeignKey(
@@ -46,8 +60,14 @@ class Customer(CustRole):
         verbose_name=_("Created by"),
         on_delete=models.PROTECT,
     )
+    account_manager = models.ForeignKey(
+        "customer.Customer",
+        related_name="%(class)s_Account",
+        verbose_name=_("Account Manager"),
+        on_delete=models.PROTECT,
+    )
     ein = models.CharField(_("EIN"), max_length=50)
-    industry = models.CharField(_("Industry"), max_length=50)
+    industry = models.CharField(_("Industry"), choices=INDUSTRY_OPTIONS, max_length=100)
     website = models.URLField(_("Webiste"), max_length=200)
     contact = models.ForeignKey(
         "customer.Contact", verbose_name=_("Contact"), on_delete=models.PROTECT
@@ -63,20 +83,83 @@ class Customer(CustRole):
 class Address(models.Model):
     """model to capture address data for all customer and contacts instances"""
 
-    active = models.CharField(_(""), max_length=50)
-    archived = models.CharField(_(""), max_length=50)
-    created_on = models.DateField(_(""), auto_now=False, auto_now_add=False)
-    last_modified = models.DateTimeField(_(""), auto_now=False, auto_now_add=True)
-    address_1 = models.CharField(_(""), max_length=50)
-    address_2 = models.CharField(_(""), max_length=50)
+    STATE_CODES = (
+        ("AL", "Alabama"),
+        ("AK", "Alaska"),
+        ("AS", "American Samoa"),
+        ("AZ", "Arizona"),
+        ("AR", "Arkansas"),
+        ("CA", "California"),
+        ("CO", "Colorado"),
+        ("CT", "Connecticut"),
+        ("DE", "Delaware"),
+        ("DC", "District of Columbia"),
+        ("FL", "Florida"),
+        ("GA", "Georgia"),
+        ("GU", "Guam"),
+        ("HI", "Hawaii"),
+        ("ID", "Idaho"),
+        ("IL", "Illinois"),
+        ("IN", "Indiana"),
+        ("IA", "Iowa"),
+        ("KS", "Kansas"),
+        ("KY", "Kentucky"),
+        ("LA", "Louisiana"),
+        ("ME", "Maine"),
+        ("MD", "Maryland"),
+        ("MA", "Massachusetts"),
+        ("MI", "Michigan"),
+        ("MN", "Minnesota"),
+        ("MS", "Mississippi"),
+        ("MO", "Missouri"),
+        ("MT", "Montana"),
+        ("NE", "Nebraska"),
+        ("NV", "Nevada"),
+        ("NH", "New Hampshire"),
+        ("NJ", "New Jersey"),
+        ("NM", "New Mexico"),
+        ("NY", "New York"),
+        ("NC", "North Carolina"),
+        ("ND", "North Dakota"),
+        ("MP", "Northern Mariana Islands"),
+        ("OH", "Ohio"),
+        ("OK", "Oklahoma"),
+        ("OR", "Oregon"),
+        ("PA", "Pennsylvania"),
+        ("PR", "Puerto Rico"),
+        ("RI", "Rhode Island"),
+        ("SC", "South Carolina"),
+        ("SD", "South Dakota"),
+        ("TN", "Tennessee"),
+        ("TX", "Texas"),
+        ("UT", "Utah"),
+        ("VT", "Vermont"),
+        ("VI", "Virgin Islands"),
+        ("VA", "Virginia"),
+        ("WA", "Washington"),
+        ("WV", "West Virginia"),
+        ("WI", "Wisconsin"),
+        ("WY", "Wyoming"),
+    )
+
+    ACTIVE_FLAG = (("active", "Active"), ("archived", "Archived"))
+
+    active = models.CharField(_("Activate Account"), choices=ACTIVE_FLAG, max_length=50)
+    created_on = models.DateField(_("Created Date"), auto_now=False, auto_now_add=False)
+    last_modified = models.DateTimeField(
+        _("Last Modified Date"), auto_now=False, auto_now_add=True
+    )
+    address_1 = models.CharField(_("Address 1"), max_length=50)
+    address_2 = models.CharField(_("Address 2"), max_length=50)
     # address_3 = models.CharField(_(""), max_length=50)
-    city = models.CharField(_(""), max_length=50)
-    state = models.CharField(_(""), max_length=50)
-    zip_code = models.CharField(_(""), max_length=50)
-    # phone = Custom phone number validation can be provided through django.core.validators via RegexValidator
+    city = models.CharField(_("City"), max_length=50)
+    state = models.CharField(_("State"), choices=STATE_CODES, max_length=50)
+    zip_code = models.CharField(_("Zip Code"), max_length=50)
+    phone = models.CharField(_("Phone"), validators=[phone_validator], max_length=15)
     # fax = models.PhoneNumberField(_("")) - phonenumber field needs to be imported from Google's libphonenumber library
-    country = models.CharField(_(""), max_length=50)
-    tax_jurisdiction = models.CharField(_(""), max_length=50)
+    country = models.CharField(_("Country"), max_length=2)
+    # tax_jurisdiction = models.CharField(_("Tax Jurisdiction"), max_length=50)
+    # ^- This really needs to be a foreignkey to a tax jurisdiction table
 
     class Meta:
         verbose_name_plural = _("Addresses")
@@ -101,8 +184,12 @@ class Contact(models.Model):
     address = models.ForeignKey(
         "customer.Address", verbose_name=_(""), on_delete=models.CASCADE
     )
-    # phone_1 = models.PhoneNumberField(_(""))
-    # phone_2 = models.PhoneNumberField(_(""))
+    phone_1 = models.CharField(
+        _("Phone 1"), validators=[phone_validator], max_length=15
+    )
+    phone_2 = models.CharField(
+        _("Phone 2"), validators=[phone_validator], max_length=15
+    )
     # phone_3 = models.PhoneNumberField(_(""))
     # phone_4 = models.PhoneNumberField(_(""))
     email_1 = models.EmailField(_(""), max_length=254)
