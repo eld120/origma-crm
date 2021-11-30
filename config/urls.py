@@ -18,6 +18,7 @@ urlpatterns = [
     path("accounts/", include("allauth.urls")),
     # path("notes/", include("interaction.urls")),
     # Your stuff: custom urls includes go here
+    path("dashboard/", include("customer.urls", namespace="customer")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # API URLS
