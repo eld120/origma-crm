@@ -8,10 +8,11 @@
     </form>
     <div class="main__list-results">
         <ul>
+        {{ context }}
             {% if context %}
             {% for value in context  %}
             <li>
-                {value.dba}
+                {{ value.dba }}
             </li>
             {% endfor %}
         </ul>

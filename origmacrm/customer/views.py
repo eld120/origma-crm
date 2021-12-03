@@ -1,6 +1,7 @@
 # from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from django.views.generic import CreateView, DetailView, ListView, TemplateView
 
 # Create your views here.
@@ -13,7 +14,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "customer/dashboard.html"
 
 
-class CustomerListView(ListView):
+class CustomerListView(LoginRequiredMixin, ListView):
     """returns the results of a search of customer accounts"""
 
     model = Customer
@@ -28,11 +29,17 @@ class CustomerListView(ListView):
         )
 
 
-class CustomerCreateView(CreateView):
+class CustomerCreateView(LoginRequiredMixin, CreateView):
+    model = Customer
+    template_name = ".html"
+    success_url = "CustomerDetailView:slug"
+
+
+class CustomerDetailView(LoginRequiredMixin, DetailView):
     model = Customer
     template_name = ".html"
 
-
-class CustomerDetailView(DetailView):
-    model = Customer
-    template_name = ".html"
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["customer"] = get_object_or_404(Customer, None)
+        return context

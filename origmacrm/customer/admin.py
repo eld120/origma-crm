@@ -16,4 +16,4 @@ class ContactAdmin(admin.ModelAdmin):
 
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
-    pass
+    prepopulated_fields = {"slug": ("dba",)}
