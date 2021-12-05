@@ -2,24 +2,24 @@
 
 
 {% block main %}
-<main class="main">
-    <form action="" method='get' class="main__form">
+
+    <form action="{% url 'customer:customer-list' %}" method='get' class="main__form">
         <input name='q' type="text" placeholder="Search...">
     </form>
     <div class="main__list-results">
         <ul>
-        {{ context }}
+
             {% if context %}
             {% for value in context  %}
             <li>
-                {{ value.dba }}
+                <a href="{% url 'customer:customer-detail' value.slug %}">{{ value.dba }}</a> {{value.industry}}
+
             </li>
             {% endfor %}
         </ul>
     </div>
 {% endif %}
 
-</main>
 
 
 {% endblock main %}

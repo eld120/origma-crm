@@ -46,7 +46,7 @@
         <nav class="header__nav ">
             <ul>
                 <li><a href="{% url 'customer:dashboard' %}">Home</a></li>
-                <li><a href="">Customers</a></li>
+                <li><a href="{% url 'customer:customer-list' %}">Customers</a></li>
                 <li><a href="">Tasks</a></li>
                 <li><a href="{% url 'admin:index' %}">Admin</a></li>
             </ul>
@@ -54,9 +54,10 @@
     </header>
 
 
-
-      {% block main %}
-      {% endblock %}
+      <main class="main">
+        {% block main %}
+        {% endblock %}
+      </main>
 
 
     {% block inline_javascript %}

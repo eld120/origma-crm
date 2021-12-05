@@ -1,10 +1,16 @@
 # from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.shortcuts import get_object_or_404
-from django.views.generic import CreateView, DetailView, ListView, TemplateView
+from django.urls import reverse_lazy
+from django.views.generic import (
+    CreateView,
+    DetailView,
+    ListView,
+    TemplateView,
+    UpdateView,
+)
 
-# Create your views here.
+from origmacrm.customer.forms import CustomerForm
 from origmacrm.customer.models import Customer
 
 
@@ -18,28 +24,34 @@ class CustomerListView(LoginRequiredMixin, ListView):
     """returns the results of a search of customer accounts"""
 
     model = Customer
-    template_name = "dashboard.html"
+    template_name = "customer/dashboard.html"
+    context_object_name = "context"
 
-    # could be useful to allow searches across different db fields
     def get_queryset(self):
         user_query = self.request.GET.get("q")
-        # eventually implement prefetch_related to reduce db queries
-        return Customer.objects.filter(
-            Q(dba__icontains=user_query) & Q(dba__startswith=user_query)
-        )
+        if user_query:
+            return Customer.objects.filter(
+                Q(dba__icontains=user_query) | Q(dba__startswith=user_query)
+            )
+        return Customer.objects.all()
 
 
 class CustomerCreateView(LoginRequiredMixin, CreateView):
-    model = Customer
-    template_name = ".html"
-    success_url = "CustomerDetailView:slug"
+    form_class = CustomerForm
+    template_name = "customer-create.html"
+    success_url = reverse_lazy("customer:CustomerDetailView")
 
 
 class CustomerDetailView(LoginRequiredMixin, DetailView):
     model = Customer
-    template_name = ".html"
+    template_name = "customer/customer.html"
+    context_object_name = "context"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["customer"] = get_object_or_404(Customer, None)
-        return context
+
+class CustomerUpdateView(LoginRequiredMixin, UpdateView):
+    form_class = CustomerForm
+    template_name = "customer-create.html"
+
+    def get_queryset(self):
+        slug = self.object.slug
+        return Customer.objects.filter(customer_slug=slug)

@@ -96,6 +96,10 @@ class Customer(models.Model):
     def set_account_manager(self, user):
         self.account_manager = user
 
+    def update_shipping_address(self):
+        if self.billing_address.role == "both" or "Shipping/Billing":
+            self.shipping_address.id = self.billing_address.id
+
     def save(self, *args, **kwargs):
         self.slug = slugify(self.dba)
 
