@@ -1,38 +1,52 @@
 # from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.views.generic import CreateView, DetailView, ListView, TemplateView
+from django.urls import reverse_lazy
+from django.views import generic
 
-# Create your views here.
+from origmacrm.customer.forms import CustomerForm
 from origmacrm.customer.models import Customer
 
 
-class DashboardView(LoginRequiredMixin, TemplateView):
+class DashboardView(LoginRequiredMixin, generic.TemplateView):
     """handles CRM home page with search functionality"""
 
     template_name = "customer/dashboard.html"
 
 
-class CustomerListView(ListView):
+class CustomerListView(LoginRequiredMixin, generic.ListView):
     """returns the results of a search of customer accounts"""
 
     model = Customer
-    template_name = "dashboard.html"
+    template_name = "customer/dashboard.html"
+    context_object_name = "context"
 
-    # could be useful to allow searches across different db fields
     def get_queryset(self):
         user_query = self.request.GET.get("q")
-        # eventually implement prefetch_related to reduce db queries
-        return Customer.objects.filter(
-            Q(dba__icontains=user_query) & Q(dba__startswith=user_query)
+        if user_query:
+            return Customer.objects.filter(
+                Q(dba__icontains=user_query) | Q(dba__startswith=user_query)
+            )
+        return Customer.objects.all()
+
+
+class CustomerCreateView(LoginRequiredMixin, generic.CreateView):
+    form_class = CustomerForm
+    template_name = "customer/customer-create.html"
+
+    def get_success_url(self):
+        return reverse_lazy(
+            "customer:customer-detail", kwargs={"slug": self.kwargs["slug"]}
         )
 
 
-class CustomerCreateView(CreateView):
+class CustomerDetailView(LoginRequiredMixin, generic.DetailView):
     model = Customer
-    template_name = ".html"
+    template_name = "customer/customer.html"
+    context_object_name = "context"
 
 
-class CustomerDetailView(DetailView):
+class CustomerUpdateView(LoginRequiredMixin, generic.UpdateView):
     model = Customer
-    template_name = ".html"
+    form_class = CustomerForm
+    template_name = "customer/customer-create.html"

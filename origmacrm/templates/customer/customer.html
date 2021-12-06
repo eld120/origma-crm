@@ -1,0 +1,52 @@
+{% extends 'customer/base.html' %}
+
+{% block main %}
+<a href="{% url 'customer:customer-update' context.slug %}">Update {{ context.name }}</a>
+<table class="main__table">
+
+    <tr>
+        <th>DBA: </th><td>{{ context.dba }}</td>
+    </tr>
+    <tr>
+        <th>Business Name: </th><td>{{ context.name }}</td>
+    </tr>
+    <tr>
+        <th> Billing Address: </th> <td>{{ context.billing_address }}</td>
+    </tr>
+    <tr>
+        <th> Shipping Address: </th><td>{{ context.shipping_address }}</td>
+    </tr>
+    <tr>
+        <th> Start Date: </th> <td>{{ context.start_date }}</td>
+    </tr>
+    <tr>
+        <th> End Date: </th><td>{{ context.end_date }}</td>
+    </tr>
+    <tr>
+        <th> Active Flag: </th><td>{{ context.active }}</td>
+    </tr>
+    <tr>
+        <th> Created on: </th><td>{{ context.created_date }}</td>
+    </tr>
+    <tr>
+        <th> Created by: </th><td>{{ context.created_by }}</td>
+    </tr>
+    <tr>
+        <th> Account Manager: </th><td>{{ context.account_manager }}</td>
+    </tr>
+    <tr>
+        <th> EIN: </th><td>{{ context.ein }}</td>
+    </tr>
+    <tr>
+        <th> Industry </th><td>{{ context.industry }}</td>
+    </tr>
+    <tr>
+        <th> Website: </th> <td>{{ context.website }}</td>
+    </tr>
+    <tr>
+        <th> Contacts: </th><td>{{ context.contact }}</td>
+    </tr>
+
+</table>
+
+{% endblock main %}

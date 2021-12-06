@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Address, Contact, Customer
+from origmacrm.customer.models import Address, Contact, Customer
 
 
 class AddressForm(forms.ModelForm):
@@ -8,8 +8,6 @@ class AddressForm(forms.ModelForm):
         model = Address
         fields = (
             "active",
-            "created_on",
-            "last_modified",
             "address_1",
             "address_2",
             "city",
@@ -26,12 +24,11 @@ class CustomerForm(forms.ModelForm):
         fields = (
             "dba",
             "name",
+            "active",
             "role",
             "billing_address",
             "shipping_address",
             "end_date",
-            "active",
-            "archive",
             "account_manager",
             "ein",
             "industry",
@@ -39,15 +36,21 @@ class CustomerForm(forms.ModelForm):
             "contact",
         )
 
+    def clean(self):
+        if self.billing_address == "both" or "Shipping/Billing":
+            self.shipping_address.id = self.billing_address.id
+
+        return self.cleaned_data
+
 
 class ContactForm(forms.ModelForm):
     class Meta:
         model = Contact
         fields = (
             "name",
+            "employer",
             "position",
             "description",
-            "address",
             "phone_1",
             "phone_2",
             "email_1",
