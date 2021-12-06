@@ -2,7 +2,7 @@
 
 
 {% block main %}
-
+    <a href="{% url 'customer:cust-create'  %}">Create New Customer</a>
     <form action="{% url 'customer:customer-list' %}" method='get' class="main__form">
         <input name='q' type="text" placeholder="Search...">
     </form>

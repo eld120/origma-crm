@@ -2,25 +2,19 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.urls import reverse_lazy
-from django.views.generic import (
-    CreateView,
-    DetailView,
-    ListView,
-    TemplateView,
-    UpdateView,
-)
+from django.views import generic
 
 from origmacrm.customer.forms import CustomerForm
 from origmacrm.customer.models import Customer
 
 
-class DashboardView(LoginRequiredMixin, TemplateView):
+class DashboardView(LoginRequiredMixin, generic.TemplateView):
     """handles CRM home page with search functionality"""
 
     template_name = "customer/dashboard.html"
 
 
-class CustomerListView(LoginRequiredMixin, ListView):
+class CustomerListView(LoginRequiredMixin, generic.ListView):
     """returns the results of a search of customer accounts"""
 
     model = Customer
@@ -36,22 +30,23 @@ class CustomerListView(LoginRequiredMixin, ListView):
         return Customer.objects.all()
 
 
-class CustomerCreateView(LoginRequiredMixin, CreateView):
+class CustomerCreateView(LoginRequiredMixin, generic.CreateView):
     form_class = CustomerForm
-    template_name = "customer-create.html"
-    success_url = reverse_lazy("customer:CustomerDetailView")
+    template_name = "customer/customer-create.html"
+
+    def get_success_url(self):
+        return reverse_lazy(
+            "customer:customer-detail", kwargs={"slug": self.kwargs["slug"]}
+        )
 
 
-class CustomerDetailView(LoginRequiredMixin, DetailView):
+class CustomerDetailView(LoginRequiredMixin, generic.DetailView):
     model = Customer
     template_name = "customer/customer.html"
     context_object_name = "context"
 
 
-class CustomerUpdateView(LoginRequiredMixin, UpdateView):
+class CustomerUpdateView(LoginRequiredMixin, generic.UpdateView):
+    model = Customer
     form_class = CustomerForm
-    template_name = "customer-create.html"
-
-    def get_queryset(self):
-        slug = self.object.slug
-        return Customer.objects.filter(customer_slug=slug)
+    template_name = "customer/customer-create.html"
