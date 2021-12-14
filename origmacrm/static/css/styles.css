@@ -110,14 +110,17 @@ body {
   margin: 0 auto;
 }
 .header li {
+  margin-top: 0.25rem;
+  padding-top: 0.25rem;
   border-top: 0.1rem #cfd7e2 solid;
 }
 .header li:last-child {
   border-bottom: 0.1rem #cfd7e2 solid;
 }
-.header a {
-  font-size: 18px;
-  font-weight: 800;
+.header .menu-item {
+  margin-left: 1.5rem;
+  font-weight: 700;
+  font-size: 20px;
   color: #29313d;
 }
 @media only screen and (min-width: 768px) {
@@ -152,6 +155,18 @@ body {
 .main td, .main th {
   border: 1px solid #8a96a8;
   padding: 5px 10px;
+}
+.main__submenu {
+  display: flex;
+  flex-direction: column;
+}
+@media only screen and (min-width: 768px) {
+  .main__submenu {
+    width: 100%;
+  }
+  .main__submenu * {
+    margin: 0.15rem 0;
+  }
 }
 
 /*# sourceMappingURL=styles.css.map */

@@ -10,12 +10,12 @@
     <tr>
         <th>Business Name: </th><td>{{ context.name }}</td>
     </tr>
-    <tr>
+    {% comment %} <tr>
         <th> Billing Address: </th> <td>{{ context.billing_address }}</td>
     </tr>
     <tr>
         <th> Shipping Address: </th><td>{{ context.shipping_address }}</td>
-    </tr>
+    </tr> {% endcomment %}
     <tr>
         <th> Start Date: </th> <td>{{ context.start_date }}</td>
     </tr>
@@ -27,9 +27,6 @@
     </tr>
     <tr>
         <th> Created on: </th><td>{{ context.created_date }}</td>
-    </tr>
-    <tr>
-        <th> Created by: </th><td>{{ context.created_by }}</td>
     </tr>
     <tr>
         <th> Account Manager: </th><td>{{ context.account_manager }}</td>

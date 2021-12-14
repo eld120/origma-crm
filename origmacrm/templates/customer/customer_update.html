@@ -1,0 +1,18 @@
+{% extends 'customer/base.html' %}
+
+
+{% block main %}
+
+<form method="post" class="">
+    {% csrf_token %}
+    {% comment %} {% for hidden_field in form.hidden_fields %}
+    {{ hidden_field.errors }}
+    {{ hidden_field }}
+  {% endfor %} {% endcomment %}
+
+  <table border="1">
+    {{ form }}
+</table>
+<input type="submit" name='customer_data' value="Update"></input>
+
+{% endblock %}

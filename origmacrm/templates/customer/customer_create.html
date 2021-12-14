@@ -1,0 +1,32 @@
+{% extends 'customer/base.html' %}
+
+
+{% block main %}
+
+
+
+
+
+    <div id="customer-container" >
+
+      {% include 'customer/partials/edit_customer.html' %}
+        <input type="button" hx-target="#customer-container" hx-get="{% url 'customer:test-customer-create'%}"
+          hx-swap="innerHTML" hx-trigger="click" value="New Customer">
+
+    </div>
+    <div id="address-container">
+
+
+        {% include 'customer/partials/edit_address.html' %}
+          <input type="button" hx-target="#address-container" hx-get="{% url 'customer:test-address-create'%}"
+          hx-swap="innerHTML" hx-trigger="click" value="New Address">
+
+    </div>
+
+
+
+
+
+
+
+{% endblock %}

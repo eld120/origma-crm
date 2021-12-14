@@ -2,17 +2,20 @@
 
 
 {% block main %}
-    <a href="{% url 'customer:cust-create'  %}">Create New Customer</a>
-    <form action="{% url 'customer:customer-list' %}" method='get' class="main__form">
-        <input name='q' type="text" placeholder="Search...">
-    </form>
+    <div class="main__submenu">
+        <a href="{% url 'customer:cust-create'  %}">Create New Customer</a>
+        <a href="{% url 'customer:customer-test'  %}">Create New Test Customer</a>
+        <form action="{% url 'customer:customer-list' %}" method='get' class="main__form">
+            <input name='q' type="text" placeholder="Search...">
+        </form>
+    </div>
     <div class="main__list-results">
         <ul>
 
             {% if context %}
             {% for value in context  %}
             <li>
-                <a href="{% url 'customer:customer-detail' value.slug %}">{{ value.dba }}</a> {{value.industry}}
+                <a href="{% url 'customer:customer-detail' value.slug %}">{{ value.dba }}</a>
 
             </li>
             {% endfor %}

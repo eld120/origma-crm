@@ -1,0 +1,26 @@
+
+
+
+<span hx-target="#address-form" hx-swap:"outerHTML" id="address-form">
+    <form method="post" class="">
+        {% csrf_token %}
+        <table border="1" >
+        {% for field in address_form.visible_fields %}
+            <tr>
+            <th>{{ field.label_tag }}</th>
+            <td>
+                {{ field.errors }}
+                {{ field }}
+                {{ field.help_text }}
+            </td>
+            </tr>
+        {% endfor %}
+        </table>
+        {% if address %}
+        <input type="submit" name='address_data' value="Update Address" hx-post="{% url 'customer:test-address-update' address.id  %}" ></input>
+            {% else %}
+            <input type="submit" name='address_data' value="Save Address" hx-post="{% url 'customer:test-address-create'  %}" ></input>
+        {% endif %}
+    </form>
+    {{ customer.id }}
+</span>

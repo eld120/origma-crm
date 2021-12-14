@@ -8,6 +8,8 @@ class AddressForm(forms.ModelForm):
         model = Address
         fields = (
             "active",
+            "role",
+            "location",
             "address_1",
             "address_2",
             "city",
@@ -26,21 +28,12 @@ class CustomerForm(forms.ModelForm):
             "name",
             "active",
             "role",
-            "billing_address",
-            "shipping_address",
             "end_date",
             "account_manager",
             "ein",
             "industry",
             "website",
-            "contact",
         )
-
-    def clean(self):
-        if self.billing_address == "both" or "Shipping/Billing":
-            self.shipping_address.id = self.billing_address.id
-
-        return self.cleaned_data
 
 
 class ContactForm(forms.ModelForm):
@@ -48,7 +41,7 @@ class ContactForm(forms.ModelForm):
         model = Contact
         fields = (
             "name",
-            "employer",
+            "employee_location",
             "position",
             "description",
             "phone_1",

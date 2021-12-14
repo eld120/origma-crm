@@ -32,15 +32,19 @@ body{
         margin: 0 auto ;
     }
     & li{
+        margin-top: .25rem ;
+        padding-top: .25rem;
 
         border-top: .1rem vars.$background-white solid;
     }
     & li:last-child{
         border-bottom: .1rem vars.$background-white solid;
+
     }
-    & a{
-        font-size: 18px;
-        font-weight: 800;
+    .menu-item{
+        margin-left: 1.5rem;
+        font-weight: 700;
+        font-size: 20px;
         color: vars.$text-black;
     }
 
@@ -83,5 +87,25 @@ body{
         border: 1px solid vars.$border-gray;
         padding: 5px 10px;
     }
+    &__submenu{
+        display: flex;
+        flex-direction: column;
 
+    }
+
+    @media #{vars.$tablet-landscape} {
+    &__submenu{
+        width: 100%;
+
+        & *{
+            margin: .15rem 0;
+        }
+    }
+    }
+
+    // @media #{vars.$desktop-width} {
+    // .submenu{
+
+    // }
+    // }
 }

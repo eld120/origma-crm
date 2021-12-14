@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
@@ -6,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 
 from .validators import phone_validator
 
-ACTIVE_OPTIONS = (("active", "Active"), ("active", "Inactive"), ("active", "Archived"))
+ACTIVE_OPTIONS = (("active", "Active"), ("archived", "Archived"))
 
 
 class Customer(models.Model):
@@ -14,7 +16,6 @@ class Customer(models.Model):
 
     CUSTOMER_ROLES = (
         ("customer", "Customer"),
-        ("client", "Client"),
         ("vendor", "Vendor"),
         ("employee", "Employee"),
     )
@@ -41,51 +42,23 @@ class Customer(models.Model):
     role = models.CharField(_("Role"), choices=CUSTOMER_ROLES, max_length=50)
     dba = models.CharField(_("dba"), max_length=50)
     name = models.CharField(_("Legal Business Entity"), max_length=50)
-    billing_address = models.ForeignKey(
-        "customer.Address",
-        verbose_name=_("Billing Address"),
-        related_name="%(class)s_billing",
-        on_delete=models.PROTECT,
+    active = models.CharField(
+        _("Account Status"), choices=ACTIVE_OPTIONS, max_length=25
     )
-    shipping_address = models.ForeignKey(
-        "customer.Address",
-        verbose_name=_("Shipping Address"),
-        related_name="%(class)s_location",
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,
-    )
-    start_date = models.DateField(_("Start Date"), auto_now=False, auto_now_add=False)
+    start_date = models.DateField(_("Start Date"), auto_now_add=True)
     end_date = models.DateField(
         _("End Date"), auto_now=False, auto_now_add=False, blank=True, null=True
     )
-    active = models.CharField(_("Active"), choices=ACTIVE_OPTIONS, max_length=25)
     created_date = models.DateTimeField(_("Created Date"), auto_now_add=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        related_name="created_by_%(class)s",
-        verbose_name=_("Created by"),
-        on_delete=models.PROTECT,
-    )
+    industry = models.CharField(_("Industry"), choices=INDUSTRY_OPTIONS, max_length=100)
+    website = models.URLField(_("Webiste"), max_length=200)
     account_manager = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name="%(class)s_Account",
         verbose_name=_("Account Manager"),
         on_delete=models.PROTECT,
-        blank=True,
-        null=True,
     )
     ein = models.CharField(_("EIN"), max_length=50)
-    industry = models.CharField(_("Industry"), choices=INDUSTRY_OPTIONS, max_length=100)
-    website = models.URLField(_("Webiste"), max_length=200)
-    contact = models.ForeignKey(
-        "customer.Contact",
-        verbose_name=_("Contact"),
-        related_name="%(class)s_employee",
-        on_delete=models.PROTECT,
-        blank=True,
-        null=True,
-    )
     slug = models.SlugField(max_length=250)
 
     class Meta:
@@ -94,12 +67,9 @@ class Customer(models.Model):
     def __str__(self) -> str:
         return f"{self.name} dba {self.dba}"
 
-    def set_account_manager(self, user):
-        self.account_manager = user
-
-    def update_shipping_address(self):
-        if self.billing_address.role == "both" or "Shipping/Billing":
-            self.shipping_address.id = self.billing_address.id
+    def archive_customer(self):
+        if self.active == "archived":
+            self.end_date == datetime.datetime.now()
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.dba)
@@ -107,7 +77,7 @@ class Customer(models.Model):
         super(Customer, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
-        return reverse("customer-detail", kwargs={"slug": self.slug})
+        return reverse("customer:customer-detail", kwargs={"slug": self.slug})
 
 
 class Address(models.Model):
@@ -171,17 +141,21 @@ class Address(models.Model):
         ("WI", "Wisconsin"),
         ("WY", "Wyoming"),
     )
+    COUNTRIES = (("ca", "CA"), ("mx", "MX"), ("us", "US"))
 
     LOCATION_TYPE = (
-        ("both", "Billing/Shipping"),
-        ("shipping", "Shipping Address"),
         ("billing", "Billing Address"),
+        ("billing/shipping", "Billing/Shipping"),
+        ("shipping", "Shipping Address"),
     )
 
     active = models.CharField(
-        _("Activate Account"), choices=ACTIVE_OPTIONS, max_length=25
+        _("Location Status"), choices=ACTIVE_OPTIONS, max_length=25
     )
-    role = models.CharField(_("Role"), choices=LOCATION_TYPE, max_length=10)
+    role = models.CharField(_("Address Type"), choices=LOCATION_TYPE, max_length=20)
+    location = models.ForeignKey(
+        "customer.Customer", verbose_name=_("Location"), on_delete=models.PROTECT
+    )
     created_on = models.DateField(_("Created Date"), auto_now_add=True)
     last_modified = models.DateTimeField(
         _("Last Modified Date"), auto_now=False, auto_now_add=True
@@ -194,7 +168,7 @@ class Address(models.Model):
     zip_code = models.CharField(_("Zip Code"), max_length=50)
     phone = models.CharField(_("Phone"), validators=[phone_validator], max_length=15)
     # fax = models.PhoneNumberField(_("")) - phonenumber field needs to be imported from Google's libphonenumber library
-    country = models.CharField(_("Country"), max_length=2)
+    country = models.CharField(_("Country"), choices=COUNTRIES, max_length=2)
     # tax_jurisdiction = models.CharField(_("Tax Jurisdiction"), max_length=50)
     # ^- This really needs to be a foreignkey to a tax jurisdiction table
 
@@ -204,7 +178,6 @@ class Address(models.Model):
     def __str__(self) -> str:
         return f"{self.address_1} {self.address_2} in {self.city} {self.state}"
 
-    @property
     def get_address(self):
         return f"{self.address_1} {self.address_2}\n{self.city} {self.state} {self.zip_code}\n{self.phone}"
 
@@ -224,16 +197,16 @@ class Contact(models.Model):
         ("logistics", "Logistics"),
         ("purchasing", "Purchasing"),
         ("IT", "IT"),
+        ("not employed", "Not Employed"),
     )
     name = models.CharField(_("Name"), max_length=50)
-    position = models.CharField(
-        _("Position or Role"), choices=CONTACT_ROLES, max_length=25
-    )
-    employer = models.ForeignKey(
-        "customer.Customer",
-        verbose_name=_("Employer"),
-        related_name="%(class)s_employer",
+    employee_location = models.ForeignKey(
+        "customer.Address",
+        verbose_name=_("Employee Location"),
         on_delete=models.PROTECT,
+    )
+    position = models.CharField(
+        _("Position or Role"), choices=CONTACT_ROLES, max_length=30
     )
     description = models.TextField(_("Contact Notes"))
     phone_1 = models.CharField(

@@ -1,0 +1,35 @@
+
+<span id="customer-form">
+    {% if customer %}
+    <form   hx-post="{% url 'customer:test-customer-update' customer.slug %}">
+        {% else %}
+    <form  hx-post="{% url 'customer:test-customer-create' %}">
+        {% endif %}
+        {% csrf_token %}
+        <table border="1" >
+        {% for field in customer_form.visible_fields %}
+        <tr>
+        <th>{{ field.label_tag }}</th>
+        <td>
+            {{ field.errors }}
+            {{ field }}
+            {{ field.help_text }}
+        </td>
+        </tr>
+        {% endfor %}
+    </table>
+        {% if customer %}
+            <input type="submit" name='customer_data' value="Save Customer"
+            hx-swap="outerHTML"
+            hx-target="#customer-form"></input>
+        {% else %}
+            <input type="submit" name='customer_data' value="Create Customer"
+            hx-swap="outerHTML"
+            hx-target="#customer-form"></input>
+
+        {% endif %}
+
+
+    </form>
+
+</span>
