@@ -4,6 +4,7 @@ from origmacrm.customer import views
 
 app_name = "customer"
 
+
 urlpatterns = [
     path("", views.DashboardView.as_view(), name="dashboard"),
     path("search/", views.CustomerListView.as_view(), name="customer-list"),
@@ -30,7 +31,7 @@ urlpatterns = [
     ),
     path("test-address-create/", views.test_address_create, name="test-address-create"),
     path(
-        "test-address-update/<slug:slug>",
+        "test-address-update/<int:pk>",
         views.test_address_update,
         name="test-address-update",
     ),

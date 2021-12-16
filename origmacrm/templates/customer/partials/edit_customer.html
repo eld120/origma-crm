@@ -1,9 +1,9 @@
 
 <span id="customer-form">
     {% if customer %}
-    <form   hx-post="{% url 'customer:test-customer-update' customer.slug %}">
+    <form  method="POST" >
         {% else %}
-    <form  hx-post="{% url 'customer:test-customer-create' %}">
+    <form method="POST" hx-post="{% url 'customer:test-customer-create' %}">
         {% endif %}
         {% csrf_token %}
         <table border="1" >
@@ -19,7 +19,7 @@
         {% endfor %}
     </table>
         {% if customer %}
-            <input type="submit" name='customer_data' value="Save Customer"
+            <input type="submit" name='customer_data' value="Save Customer" hx-post="{% url 'customer:test-customer-update' customer.slug %}"
             hx-swap="outerHTML"
             hx-target="#customer-form"></input>
         {% else %}

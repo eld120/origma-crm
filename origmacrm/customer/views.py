@@ -4,9 +4,11 @@ from django.db.models import Q
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views import generic
+from rest_framework import permissions, viewsets
 
 from origmacrm.customer import forms
 from origmacrm.customer.models import Address, Customer
+from origmacrm.customer.serializers import AddressSerializer, CustomerSerializer
 
 
 class DashboardView(LoginRequiredMixin, generic.TemplateView):
@@ -67,6 +69,7 @@ def customer_create(request):
     return render(request, "customer/customer_create.html")
 
 
+@login_required
 def test_customer_create(request):
     customer_form = forms.CustomerForm(
         request.POST or None,
@@ -76,12 +79,13 @@ def test_customer_create(request):
             "role": "customer",
         },
     )
+    request.session["customer"] = None
 
     if request.method == "POST":
-
         if "customer_data" in request.POST and customer_form.is_valid():
-
-            customer = customer_form.save()
+            customer = customer_form.save(commit=False)
+            customer.save()
+            request.session["customer"] = customer.id
             return redirect("customer:test-customer-update", slug=customer.slug)
 
     return render(
@@ -93,6 +97,7 @@ def test_customer_create(request):
     )
 
 
+@login_required
 def test_customer_update(request, slug):
     customer = Customer.objects.get(slug=slug)
     customer_form = forms.CustomerForm(request.POST or None, instance=customer)
@@ -111,36 +116,36 @@ def test_customer_update(request, slug):
     )
 
 
+@login_required
 def test_address_create(request):
 
     address_form = forms.AddressForm(
         request.POST or None,
-        initial={"country": "us", "active": "active", "role": "billing"},
+        initial={
+            "country": "us",
+            "active": "active",
+            "role": "billing",
+            "location": request.session["customer"] or None,
+        },
     )
 
     if request.method == "POST" and address_form.is_valid():
-        address_form.save()
 
-        return render(
-            request,
-            "customer/partials/edit_address.html",
-            {
-                "addres_form": address_form,
-            },
-        )
+        address = address_form.save(commit=False)
+        address.save()
+        return redirect("customer:test-address-update", pk=address.id)
 
     return render(
         request,
         "customer/partials/edit_address.html",
-        {
-            "address_form": address_form,
-        },
+        {"address_form": address_form, "customer": request.session["customer"]},
     )
 
 
+@login_required
 def test_address_update(request, **kwargs):
 
-    address = Address.objects.get(id=kwargs["id"])
+    address = Address.objects.get(id=kwargs["pk"])
     address_form = forms.AddressForm(request.POST or None, instance=address or None)
 
     if request.method == "POST" and address_form.is_valid():
@@ -154,3 +159,19 @@ def test_address_update(request, **kwargs):
             "address_form": address_form,
         },
     )
+
+
+class CustomerViewSet(viewsets.ModelViewSet):
+    """API endpoing for CRUD operations on the Customer table"""
+
+    queryset = Customer.objects.all()
+    serializer_class = CustomerSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class AddressViewSet(viewsets.ModelViewSet):
+    """API endpoing for CRUD operations on the Address table"""
+
+    queryset = Address.objects.all()
+    serializer_class = AddressSerializer
+    permission_classes = [permissions.IsAuthenticated]
